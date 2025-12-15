@@ -53,8 +53,8 @@ class DataHelper:
         dict
             Encoded data dictionary, keys: 'item', 'user', 'inter'.
         """
-        if not os.path.isdir(self.base / map_dir):
-            os.mkdir(self.base / map_dir)
+        map_path = self.base / map_dir
+        map_path.mkdir(parents=True, exist_ok=True)
 
         user = data["user"]
         item = data["item"]
@@ -336,8 +336,7 @@ class DataHelper:
             Name of the dataset.
         """
         path = self.base / "processed" / name
-        if not os.path.exists(path):
-            os.mkdir(path)
+        path.mkdir(parents=True, exist_ok=True)
         data["user"].to_parquet(path / "user.pqt")
         data["item"].to_parquet(path / "item.pqt")
         data["inter"].to_parquet(path / "inter.pqt")
