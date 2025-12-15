@@ -4,10 +4,22 @@ from abc import ABC, abstractmethod
 from typing import List, Dict
 from tqdm import tqdm
 import math
-import implicit
+try:
+    import implicit  # type: ignore
+except ModuleNotFoundError:  # pragma: no cover
+    implicit = None
 from scipy.sparse import coo_matrix
 
 # * scores of rules are the bigger the better
+
+
+def _require_implicit():
+    if implicit is None:  # pragma: no cover
+        raise RuntimeError(
+            "Package `implicit` is required for ALS/BPR-based retrieval rules. "
+            "Install with: pip install implicit"
+        )
+    return implicit
 
 
 class PersonalRetrieveRule(ABC):
@@ -362,7 +374,7 @@ class ALS(PersonalRetrieveRule):
         return coo
 
     def _train(self, coo_train, reg=0.01, verbose=False):
-        model = implicit.als.AlternatingLeastSquares(
+        model = _require_implicit().als.AlternatingLeastSquares(
             factors=self.factors,
             iterations=self.iter_num,
             # regularization=reg,
@@ -482,7 +494,7 @@ class UserGroupALS(PersonalRetrieveRule):
         return coo
 
     def _train(self, coo_train, factors=200, iter_num=3, reg=0.01, verbose=False):
-        model = implicit.als.AlternatingLeastSquares(
+        model = _require_implicit().als.AlternatingLeastSquares(
             factors=factors,
             iterations=iter_num,
             # regularization=reg,
@@ -597,7 +609,7 @@ class BPR(PersonalRetrieveRule):
         return coo
 
     def _train(self, coo_train, reg=0.01, verbose=False):
-        model = implicit.bpr.BayesianPersonalizedRanking(
+        model = _require_implicit().bpr.BayesianPersonalizedRanking(
             factors=self.factors,
             iterations=self.iter_num,
             learning_rate=0.05,
@@ -707,7 +719,7 @@ class UserGroupBPR(PersonalRetrieveRule):
         return coo
 
     def _train(self, coo_train, factors=300, iter_num=300, reg=0.01, verbose=False):
-        model = implicit.bpr.BayesianPersonalizedRanking(
+        model = _require_implicit().bpr.BayesianPersonalizedRanking(
             factors=self.factors,
             iterations=self.iter_num,
             learning_rate=0.05,
